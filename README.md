@@ -1,4 +1,4 @@
-Data Analytics with MongoDB - Workshop Exercises
+# Data Analytics with MongoDB - Workshop Exercises
 
 Audience: Data analysts, developers, data engineers, data scientists, and anyone who works with data to gain insight.
 
@@ -6,7 +6,7 @@ Prerequisites: None. Familiarity with mongodb, mongodb shell and Atlas are helpf
 
 Data Set: publicly available AirBnB data set that can be found here
 
-What we will use: 
+## What we will use: 
 	MongoDB Atlas
 		register at https://www.mongodb.com/cloud and create an account
 download mongodb shell
@@ -15,7 +15,7 @@ download mongodb shell
 connect with mongodb shell by typing this command in your terminal:
 mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/test" --username workshop_user --password dotlocal2018
 
-MongoDB Connector for BI hosted on Atlas
+## MongoDB Connector for BI hosted on Atlas
 use this information to connect your BI tool
 	hostname: dataanalyticsworkshop-biconnector-sshrq.mongodb.net
 	port: 27015
@@ -23,19 +23,19 @@ use this information to connect your BI tool
 To connect with Excel: https://docs.atlas.mongodb.com/tutorial/connect-bic-excel/ 
 for more: https://docs.atlas.mongodb.com/bi-connection 
 	
-MongoDB Charts
+## MongoDB Charts
 		charts server: http://charts.local.mongodb.parts/
 		username: will be assigned 
 		password: will be assigned 
 	
-MongoDB Compass
+## MongoDB Compass
 download Compass
 	Windows: https://downloads.mongodb.com/compass/mongodb-compass-community-1.15.4-win32-x64.exe
 	Mac OS X: https://downloads.mongodb.com/compass/mongodb-compass-community-1.15.4-darwin-x64.dmg  
 connect to MongoDB Atlas with this URI: 
 mongodb+srv://workshop_user:@dataanalyticsworkshop-sshrq.mongodb.net/admin
-
-Analysing AirBnB data with MongoDB Connector for BI
+
+## Analysing AirBnB data with MongoDB Connector for BI
 Define the connection to MongoDB (via BIC)
 Goal: Define a DSN for an Atlas cluster
 Access Amazon Workspace: 
@@ -55,7 +55,8 @@ Find the most expensive neighborhoods in Seattle
 Goal: Create pivot table with average price/neighborhood 
 Create a pivot table
 Rows: neighborhood Values: price, average
-Analysing AirBnB data with Charts
+
+## Analysing AirBnB data with Charts
 Add a Data Source
 Sign in to Charts: http://charts.local.mongodb.parts
 Go to Data Sources tab
@@ -71,7 +72,8 @@ Click New Dashboard
 Enter a name and description, e.g. “Tom’s AirBnB dashboard”
 Add some charts
 For each of the following, click Add Chart from the dashboard view. After the chart has been saved, resize and rearrange on the dashboard as desired.
-Multi-Series Stacked Bar Chart
+
+### Multi-Series Stacked Bar Chart
 Goal: Show the localities with the most properties, split out by property type.
 Data Source: <AirBnB data source for chosen city>
 Chart Type: Bar / Stacked
@@ -84,8 +86,7 @@ Series: property_type
 Chart Title: Properties by Location
 Result:
 
-
-Coloured Bar Chart 
+### Coloured Bar Chart 
 Goal: Show the areas with the most expensive properties, and correlate with the review scores.
 Data Source: <AirBnB data source for chosen city>
 Chart Type: Bar / Colored
@@ -98,7 +99,7 @@ Color: review_scores.review_scores_location
 Chart Title: Price by Location, coloured by Location Review score
 Result:
 
-Review Scores Histogram
+### Review Scores Histogram
 Goal: Show the number of properties with various review scores
 Data Source: <AirBnB data source for chosen city>
 Chart Type: Column / Grouped
@@ -111,7 +112,7 @@ Filter (to hide properties with no review score):
 Chart Title: Review Score Histogram
 Result:
 
-Filtered Donut Chart
+### Filtered Donut Chart
 Goal: Show the types of properties that contain pools
 Data Source: <AirBnB data source for chosen city>
 Chart Type: Circular / Donut
@@ -123,7 +124,7 @@ Filter (to show only properties with pools):
 Chart Title: Properties with Pools
 Result:
 
-Area Chart with Binning
+### Area Chart with Binning
 Goal: Show the number of reviews of any property, month by month
 Data Source: <AirBnB data source for chosen city>
 Chart Type: Area / Discrete
@@ -135,7 +136,7 @@ Y axis: _id, Count aggregation
 Chart Title: Reviews over time
 Result:
 
-Array Reduction - Existence of Value
+### Array Reduction - Existence of Value
 Goal: Show the number of properties with and without pools by area
 Data Source: <AirBnB data source for chosen city>
 Chart Type: Column / Stacked
@@ -148,7 +149,7 @@ Chart Title: Pool or No Pool
 Result:
 
 
-Create your own charts
+### Create your own charts
 Now that you’ve got an understanding of what Charts can do, try creating your own charts that provides some new insight from this data set.
 
 If you want to make something similar to one of your existing charts, click the [...] menu on the chart and then choose Duplicate Chart. 
@@ -164,14 +165,7 @@ Choose to share with Everyone, with Viewer role.
 
 Once others have shared their dashboards with you, take a look at what they have created!
 
-
-
-
-
-
-
-
-Analysing AirBnB data with Aggregation Framework
+## Analysing AirBnB data with Aggregation Framework
 
 Explore data by doing some basic finds
 1. Connect to your mongodb Atlas cluster using mongodb shell: 
@@ -222,7 +216,6 @@ db.austinListingsAndReviews.aggregate( [
    }}
 ] )
 
-
 2. Let’s practice some more. This time write the query from scratch to find the average price per night by suburb. Examine the document structure first. Hint: suburb is a field within a subdocument address; use dot notation to reference it.
 3. Now let’s combine the skills we’ve learned. Compute the count of properties and average price per night by suburbs and number of bedrooms by filling in the blanks.
 db.austinListingsAndReviews.aggregate([
@@ -234,18 +227,9 @@ avg:{$___:"$price"}}
 		}
 ])
 
-
 4. Use the query in #3 and add a $match stage to only show those properties that have a pool.
 
-
-
-
-
-
-
-
-
-Learn how to do aggregations you cannot do in SQL
+## Learn how to do aggregations you cannot do in SQL
 We will use the following operators:	
 $objectToArray
 $geonear
@@ -265,12 +249,6 @@ db.austinListingsAndReviews.aggregate([
 
 Compare two neighbourhoods - South Lamar and West Campus - and decide based on average review where you would rather stay. Assume you also want a place that has pool, wifi, and air-conditioning, under $200
 Hint: You will need to look up how to use $and operator for this
-
-
-
-
-
-
 
 2. Let’s find all airbnb listings around our .local Austin venue, Alamo Drafthouse. The coordinates are 30.2988474,-97.7064386. We can do this by using $geoNear operator, as follows:
 
@@ -312,5 +290,3 @@ db.austinListingsAndReviews.aggregate( [
 
 
 Now build your own $graphLookup query. Some host in Austin have multiple listings, for example, host_id:100208662. Construct a $graphlookup query that finds all the listings by that host. You can find $graphLookup documentation and additional examples here.
-
-
