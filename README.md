@@ -176,6 +176,7 @@ Now that you’ve got an understanding of what Charts can do, try creating your 
 
 If you want to make something similar to one of your existing charts, click the [...] menu on the chart and then choose Duplicate Chart. 
 Share your dashboard and data source
+
 When you’ve finished creating your dashboard, share it with the class!
 Go to the Data Sources tab
 Find your data source and click the ACCESS button
@@ -312,3 +313,6 @@ db.austinListingsAndReviews.aggregate( [
 
 
 Now build your own $graphLookup query. Some host in Austin have multiple listings, for example, host_id:100208662. Construct a $graphlookup query that finds all the listings by that host. You can find $graphLookup documentation and additional examples here.
+
+## Using MongoDB with Spark
+
