@@ -5,6 +5,7 @@ Audience: Data analysts, developers, data engineers, data scientists, and anyone
 Prerequisites: None. Familiarity with mongodb, mongodb shell and Atlas are helpful
 
 Data Set: publicly available AirBnB data set that can be found here
+http://insideairbnb.com/get-the-data.html
 
 ## What we will use: 
 	MongoDB Atlas
@@ -45,8 +46,7 @@ mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/airbnb" --username 
 Download  authentication plugin 
 https://docs.mongodb.com/bi-connector/master/tutorial/install-auth-plugin-c/#install-auth-c-plugin
 
-Install mongosql_auth.so to <mysql-home>/lib/plugin/ directory.
-
+Install mongosql_auth.so to <mysql-home>/lib/plugin/ directory. <br/>
 mysql -h dataanalyticsworkshop-biconnector-sshrq.mongodb.net -P 27015 -u demo -p --default-auth= airbnb
 
 ### Define the connection to MongoDB (via BIC)
@@ -63,11 +63,15 @@ Insert new query
 Select BIC DSN
 In Advanced section, input query provided
 
-#### Activity Find the most expensive neighborhoods in Seattle
+#### Activity Find the most expensive neighborhoods in Austin
 Goal: Create pivot table with average price/neighborhood 
 
 Create a pivot table
-Rows: neighborhood Values: price, average
+Rows: neighborhood Values: price, average
+
+Goal: Expand on above pivot table to include price per Airbed
+Create pivot table: price, beds
+Add calculated field price per bed
 
 ## Analysing AirBnB data with Charts
 Add a Data Source
