@@ -314,5 +314,71 @@ db.austinListingsAndReviews.aggregate( [
 
 Now build your own $graphLookup query. Some host in Austin have multiple listings, for example, host_id:100208662. Construct a $graphlookup query that finds all the listings by that host. You can find $graphLookup documentation and additional examples here.
 
-## Using MongoDB with Spark
 
+## The MongoDB Connector for Apache Spark
+
+Using the machine learning ALS library in Spark to generate a set of personalized movie recommendations for a given user based MovieLens dataset. </br>
+
+http://files.grouplens.org/datasets/movielens/ml-latest-small.zip
+
+<br/>Ensure you have downloaded the data and imported it into MongoDB with mongorestore. You can find instructions on using mongorestore in the MongoDB Documentation. You can also run this full example with Execute the following Databricks Notebook<br/>
+https://community.cloud.databricks.com/?o=2374217986360057#notebook/42327714871690
+
+#### Download Spark 
+http://apache.claz.org/spark/spark-2.3.2/spark-2.3.2-bin-hadoop2.7.tgz
+tar -xf spark-2.3.2-bin-hadoop2.7.tgz
+
+#### Execute Spark
+from the commandline, start the Spark interactive shell
+
+```
+./spark-2.3.1-bin-hadoop2.7/bin/spark-shell \
+ --conf \
+"spark.mongodb.input.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/recommendation.ratings" \
+ --conf \
+  "spark.mongodb.output.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/recommendation.perUser" \
+ --packages org.mongodb.spark:mongo-spark-connector_2.11:2.3.0
+```
+
+#### Run the scala example code
+
+```
+import com.mongodb.spark._
+
+val ratings = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("database", "recommendation").option("collection", "ratings").load()
+
+case class Rating(userId: Int, movieId: Int, rating: Double, timestamp: Long)
+
+import spark.implicits._
+val ratingsDS = ratings.as[Rating]
+ratingsDS.cache()
+ratingsDS.show()
+
+import org.apache.spark.ml.evaluation.RegressionEvaluator
+import org.apache.spark.ml.recommendation.ALS
+
+/* import org.apache.spark.ml.recommendation.ALS.Rating */
+val Array(training, test) = ratings.randomSplit(Array(0.8, 0.2))
+
+// Build the recommendation model using ALS on the training data
+val als = new ALS().setMaxIter(5).setRegParam(0.01).setUserCol("userId").setItemCol("movieId").setRatingCol("rating")
+val model = als.fit(training)
+
+// Evaluate the model by computing the RMSE on the test data
+// Note we set cold start strategy to 'drop' to ensure we don't get NaN evaluation metrics
+model.setColdStartStrategy("drop")
+val predictions = model.transform(test)
+
+val evaluator = new RegressionEvaluator().setMetricName("rmse").setLabelCol("rating").setPredictionCol("prediction")
+val rmse = evaluator.evaluate(predictions)
+println(s"Root-mean-square error = $rmse")
+
+
+// Write recommendations back to MongoDB
+import org.apache.spark.sql.functions._
+val docs  = predictions.map( r => ( r.getInt(4), r.getInt(1),  r.getDouble(2) ) ).toDF( "userID", "movieId", "rating" )
+
+docs.show()
+
+docs.write.format("com.mongodb.spark.sql.DefaultSource").mode("overwrite").option("database", "recommendation").option("collection", "recommendations").save()
+```
