@@ -36,23 +36,36 @@ connect to MongoDB Atlas with this URI:
 mongodb+srv://workshop_user:@dataanalyticsworkshop-sshrq.mongodb.net/admin
 
 ## Analysing AirBnB data with MongoDB Connector for BI
-Define the connection to MongoDB (via BIC)
+
+### Examine Data with Mongo Shell
+download shell https://www.mongodb.com/download-center#community
+mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/airbnb" --username demo
+
+### Examine data with MySQL CLI
+Download  authentication plugin 
+https://docs.mongodb.com/bi-connector/master/tutorial/install-auth-plugin-c/#install-auth-c-plugin
+
+Install mongosql_auth.so to <mysql-home>/lib/plugin/ directory.
+
+mysql -h dataanalyticsworkshop-biconnector-sshrq.mongodb.net -P 27015 -u demo -p --default-auth= airbnb
+
+### Define the connection to MongoDB (via BIC)
 Goal: Define a DSN for an Atlas cluster
-Access Amazon Workspace: 
-Open 32-bit DSN manager
-Click Add
-Choose MongoDB Unicode
-Enter name, server, db, and credential information
-Test connection
-Advanced: Test ODBC connection using PowerShell
-Import Data Into Excel
+* Open 32-bit DSN manager
+* Click Add
+* Choose MongoDB Unicode
+* Enter name, server, db, and credential information
+* Test connection
+
+### Import Data Into Excel
 Goal: Import data into Excel using a simple SQL JOIN query
 Insert new query
 Select BIC DSN
 In Advanced section, input query provided
-Import Data into worksheet
-Find the most expensive neighborhoods in Seattle
+
+#### Activity Find the most expensive neighborhoods in Seattle
 Goal: Create pivot table with average price/neighborhood 
+
 Create a pivot table
 Rows: neighborhood Values: price, average
 
