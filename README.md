@@ -39,7 +39,6 @@ mongodb+srv://workshop_user:@dataanalyticsworkshop-sshrq.mongodb.net/admin
 ## Analysing AirBnB data with MongoDB Connector for BI
 
 ### Examine Data with Mongo Shell
-download shell https://www.mongodb.com/download-center#community
 mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/airbnb" --username demo
 
 ### Examine data with MySQL CLI
