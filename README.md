@@ -47,7 +47,12 @@ Download  authentication plugin
 https://docs.mongodb.com/bi-connector/master/tutorial/install-auth-plugin-c/#install-auth-c-plugin
 
 Install mongosql_auth.so to <mysql-home>/lib/plugin/ directory. <br/>
+
+#### Connect to Hosted BIC 
 mysql -h dataanalyticsworkshop-biconnector-sshrq.mongodb.net -P 27015 -u demo -p --default-auth= airbnb
+
+#### Execute a join
+select austinListingsAndReviews._id, austinListingsAndReviews_amenities.amenities AS amenities from austinListingsAndReviews JOIN  austinListingsAndReviews_amenities ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id limit 10;
 
 ### Define the connection to MongoDB (via BIC)
 Goal: Define a DSN for an Atlas cluster
