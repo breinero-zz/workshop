@@ -68,10 +68,10 @@ mysql> describe austinListingsAndReviews_amenities;
 
 __Step 5__ Execute a JOIN to list the set of amenities per listing
 ```
-    mysql> SELECT austinListingsAndReviews._id AS id, austinListingsAndReviews_amenities.amenities AS amenity 
-    FROM austinListingsAndReviews 
-    JOIN  austinListingsAndReviews_amenities 
-        ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id
+mysql> SELECT austinListingsAndReviews._id AS id, austinListingsAndReviews_amenities.amenities AS amenity 
+FROM austinListingsAndReviews 
+JOIN  austinListingsAndReviews_amenities 
+    ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id
 LIMIT 10;
 ```
 ### Activity 3: Analyze Listings Data with Excel
@@ -109,8 +109,8 @@ __Step 2__ Add calculated field price per bed
 
 ## Part 2: Analysing AirBnB data with Charts
     charts server: http://charts.local.mongodb.parts/
-    username: will be assigned 
-    password: will be assigned 
+    username: workshop_user
+    password: dotlocal2018 
     
 ## Analysing AirBnB data with Charts
 Add a Data Source
