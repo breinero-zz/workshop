@@ -1,82 +1,117 @@
 # Data Analytics with MongoDB - Workshop Exercises
 
-Audience: Data analysts, developers, data engineers, data scientists, and anyone who works with data to gain insight.
+__Audience:__ 
+Data analysts, developers, data engineers, data scientists, and anyone who works with data to gain insight.
+__Prerequisites:__ 
+None. Some familiarity with mongodb, mongodb shell and Atlas are helpful
+__Data Set:__ 
+This workshop uses the publicly available [AirBnB data set](http://insideairbnb.com/get-the-data.html). This data set has been pre-loaded into an instance of MongoDB hosted in Altas, our fully managed MongoDB-as-a-Service database. Attendees of the live workshop will run the exercises against this hosted instance. If you missed the workshop, you may register an Atlas account here https://www.mongodb.com/cloud and run these examples anytime.
 
-Prerequisites: None. Familiarity with mongodb, mongodb shell and Atlas are helpful
+## Part 1: Analysing AirBnB data with the BI Connector
 
-Data Set: publicly available AirBnB data set that can be found here
-http://insideairbnb.com/get-the-data.html
+### Activity 1: Examine AirBnb Data With the MongoDB Shell
+__the MongoDB Shell__ (the command line interface for MongoDB)
+Download the shell here:
+  Windows: [mongodb-shell-win32-x86_64-2008plus-ssl-4.0.2.zip](https://downloads.mongodb.org/win32/mongodb-shell-win32-x86_64-2008plus-ssl-4.0.2.zip)
+  Mac OS X: [mongodb-shell-osx-ssl-x86_64-4.0.2.tgz](https://downloads.mongodb.org/osx/mongodb-shell-osx-ssl-x86_64-4.0.2.tgz)
+  
+Use the mongo command line shell to connect to the Altas Instance typing
+this command in your terminal:
+   ```
+   mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/airbnb" \
+   --username workshop_user \
+   --password dotlocal2018
+   ```
 
-## What we will use: 
-	MongoDB Atlas
-		register at https://www.mongodb.com/cloud and create an account
-download mongodb shell
-	Windows: https://downloads.mongodb.org/win32/mongodb-shell-win32-x86_64-2008plus-ssl-4.0.2.zip
-	Mac OS X: https://downloads.mongodb.org/osx/mongodb-shell-osx-ssl-x86_64-4.0.2.tgz
-connect with mongodb shell by typing this command in your terminal:
-mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/test" --username workshop_user --password dotlocal2018
+__Step 1__ List the collections in the database 
+From the sell prompt, execute the following command
+```
+show collections
+```
+__Step 2__ examine an individual document in the austinListingsandReviews collection
+at the prompt execute:
+```
+db.austinListingsAndReviews.findOne()
+``` 
 
-## MongoDB Connector for BI hosted on Atlas
-use this information to connect your BI tool
-	hostname: dataanalyticsworkshop-biconnector-sshrq.mongodb.net
-	port: 27015
-			user: workshop_user?source=admin
-To connect with Excel: https://docs.atlas.mongodb.com/tutorial/connect-bic-excel/ 
-for more: https://docs.atlas.mongodb.com/bi-connection 
-	
-## MongoDB Charts
-		charts server: http://charts.local.mongodb.parts/
-		username: will be assigned 
-		password: will be assigned 
-	
-## MongoDB Compass
-download Compass
-	Windows: https://downloads.mongodb.com/compass/mongodb-compass-community-1.15.4-win32-x64.exe
-	Mac OS X: https://downloads.mongodb.com/compass/mongodb-compass-community-1.15.4-darwin-x64.dmg  
-connect to MongoDB Atlas with this URI: 
-mongodb+srv://workshop_user:@dataanalyticsworkshop-sshrq.mongodb.net/admin
+### Activity 2: Examine the data through the BI Connnector, using the MySQL CLI 
+__The MongoDB Connector for BI__ translates queries and data between SQL and MongoDB, allowing you to connect data visualiztion tools such as Tableau, PowerBI, MS Excel, or the MySQL Command Line to data managed in MongoDB. We are going to use a fully managed version of the BI Connnector, hosted in Atlas. The BI Connector can be accessed with the following information
 
-## Analysing AirBnB data with MongoDB Connector for BI
+  hostname: dataanalyticsworkshop-biconnector-sshrq.mongodb.net
+  port: 27015
+    user: workshop_user?source=admin
+    password: dotlocal2018
 
-### Examine Data with Mongo Shell
-mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/airbnb" --username demo
+To Connect the BI Connector from the MySQL client
+__Step 1__ Download and install [MySQL](https://dev.mysql.com/downloads/windows/installer/8.0.html)
 
-### Examine data with MySQL CLI
-Download  authentication plugin 
-https://docs.mongodb.com/bi-connector/master/tutorial/install-auth-plugin-c/#install-auth-c-plugin
+__Step 2__ Install MongoDB Authentication Plugin 
+The Authentication Plugin eases authentication between the BI Connector and SQL clients. Download and install the plugin per our [instructions](https://docs.mongodb.com/bi-connector/master/tutorial/install-auth-plugin-c/#install-auth-c-plugin)
 
-Install mongosql_auth.so to <mysql-home>/lib/plugin/ directory. <br/>
+__Step 3__ Connect view MySQL Client
+from your command line prompt, execute
+```
+mysql -h dataanalyticsworkshop-biconnector-sshrq.mongodb.net \
+-P 27015 \
+-u workshop_user -p \
+--default-auth=mongosql_auth airbnb
+```
+authenticate with the password "dotlocal2018"
 
-#### Connect to Hosted BIC 
-mysql -h dataanalyticsworkshop-biconnector-sshrq.mongodb.net -P 27015 -u demo -p --default-auth= airbnb
+__Step 4__ Explore the tabular representation of the airbnb data
+at the MySQL prompt execute:
+```
+mysql> show tables;
+mysql> describe austinListingsAndReviews;
+mysql> describe austinListingsAndReviews_amenities;
+```
 
-#### Execute a join
-select austinListingsAndReviews._id, austinListingsAndReviews_amenities.amenities AS amenities from austinListingsAndReviews JOIN  austinListingsAndReviews_amenities ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id limit 10;
+__Step 5__ Execute a JOIN to list the set of amenities per listing
+```
+    mysql> SELECT austinListingsAndReviews._id AS id, austinListingsAndReviews_amenities.amenities AS amenity 
+    FROM austinListingsAndReviews 
+    JOIN  austinListingsAndReviews_amenities 
+        ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id
+LIMIT 10;
+```
+### Activity 3: Analyze Listings Data with Excel
+__Step 1__ Download MongoDB ODBC driver
+[Select and download](https://github.com/mongodb/mongo-odbc-driver/releases/) the appropriate version for your OS
 
-### Define the connection to MongoDB (via BIC)
-Goal: Define a DSN for an Atlas cluster
-* Open 32-bit DSN manager
-* Click Add
-* Choose MongoDB Unicode
-* Enter name, server, db, and credential information
-* Test connection
+__Step 2__ Create a DSN
+Follow OS specfic [instructions](https://docs.atlas.mongodb.com/tutorial/create-system-dsn/)
 
-### Import Data Into Excel
-Goal: Import data into Excel using a simple SQL JOIN query
-Insert new query
-Select BIC DSN
-In Advanced section, input query provided
+__Step 3__ Connect from Excel
+* Start Excel, select the "data" Tab, and clik on "New Database Query"
+* Select the DSN you created in step 2 from the pop-up window and click "ok"
+* enter username "workshop_user" and password "dotlocal2018"
+More detailed and Illustrated details on connecting from Excel are available in this [tutorial](https://docs.mongodb.com/bi-connector/master/connect/excel/)  
 
-#### Activity Find the most expensive neighborhoods in Austin
-Goal: Create pivot table with average price/neighborhood 
+__Step 4__ Enter Query or Join 
+In the popup's "SQL Query" section, input query
+```
+SELECT *
+FROM austinListingsAndReviews 
+JOIN  austinListingsAndReviews_amenities "return data"
+    ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id;
+```
+__Step 5__ Load data into sheet
+Click "return data" to populate the spread sheet
 
-Create a pivot table
-Rows: neighborhood Values: price, average
+#### Excercise: Find the most expensive neighborhoods in Austin
+__Goal:__ Create pivot table with average price/neighborhood 
+__step 1__ Create a pivot table
+Set Rows: neighborhood Values: price, average
 
-Goal: Expand on above pivot table to include price per Airbed
-Create pivot table: price, beds
-Add calculated field price per bed
+__Goal:__ Expand on above pivot table to include price per Airbed
+__Step 1__ Create pivot table: price, beds
+__Step 2__ Add calculated field price per bed
 
+## Part 2: Analysing AirBnB data with Charts
+    charts server: http://charts.local.mongodb.parts/
+    username: will be assigned 
+    password: will be assigned 
+    
 ## Analysing AirBnB data with Charts
 Add a Data Source
 Sign in to Charts: http://charts.local.mongodb.parts
@@ -129,7 +164,7 @@ X axis: review_scores.review_scores_rating
 Binning: On, bin size 5
 Y axis: _id, Count aggregation
 Filter (to hide properties with no review score):
-	{ 'review_scores.review_scores_rating': { $gte: 0}}
+  { 'review_scores.review_scores_rating': { $gte: 0}}
 Chart Title: Review Score Histogram
 Result:
 
@@ -141,7 +176,7 @@ Encodings:
 Label: Property Type
 Arc: _id, Count aggregation
 Filter (to show only properties with pools):
-	{ amenities: 'Pool'}
+  { amenities: 'Pool'}
 Chart Title: Properties with Pools
 Result:
 
@@ -187,36 +222,51 @@ Choose to share with Everyone, with Viewer role.
 
 Once others have shared their dashboards with you, take a look at what they have created!
 
-## Analysing AirBnB data with Aggregation Framework
+## Part 3: Analysing AirBnB data with Aggregation Framework
+The following examples are executed in the mongo shell, but you are welcome to use __MongoDB Compass__ the GUI for MongoDB. __Compass__ Allows you Visually explore your data and construct ad hoc queries with its _Aggregation Builder_.
 
-Explore data by doing some basic finds
+__Download Compass__
+  Windows: [mongodb-compass-community-1.15.4-win32-x64.exe](https://downloads.mongodb.com/compass/mongodb-compass-community-1.15.4-win32-x64.exe)
+  Mac OS X: [mongodb-compass-community-1.15.4-darwin-x64.dmg](https://downloads.mongodb.com/compass/mongodb-compass-community-1.15.4-darwin-x64.dmg)
+  
+__connect to MongoDB Atlas with this URI:__
+mongodb+srv://workshop_user:@dataanalyticsworkshop-sshrq.mongodb.net/admin
+
+### Activity: Explore data by doing some basic finds
 1. Connect to your mongodb Atlas cluster using mongodb shell: 
+```
 mongo "mongodb+srv://dataanalyticsworkshop-sshrq.mongodb.net/test" --username dotlocaluser --password dotlocaluser
-
+```
 2. Define which database we are going to use
+```
 use airbnb
+```
 
 3. Explore collections available to use for analysis. We will use austinListingsAndReviews collection.
+```
 show collections
+```
 
 4. Find a single document
+```
 db.austinListingsAndReviews.findOne()
-
+```
 5. Find how many listings have a real bed and are greater than $100 but less than $200 per night by filling in the blanks.
-	Hint:
+_Hint:
+```
 db.___.find( { 
 price: { ___: ___, $lt: ___ } } , 
 { ___ : "Real Bed" 
 } ).count()
+```
 
-
-
-Learn how to do aggregations you usually do in SQL
-We will use the following operators:	
+### Activity: Learn how to do aggregations you usually do in SQL
+We will use the following operators:  
 $match
 $group
 
 Take a look at this example aggregation which computes minimum price per night by number of beds
+```
 db.austinListingsAndReviews.aggregate( [
    {
      $group: {
@@ -226,9 +276,10 @@ db.austinListingsAndReviews.aggregate( [
    },
    { $sort: { avg_by_beds: 1 } }
 ] )
-
+```
 
 1. Construct a very similar query to find average price per night by room type by filling in the blanks. 
+```
 db.austinListingsAndReviews.aggregate( [
    {
      $group: {
@@ -237,43 +288,43 @@ db.austinListingsAndReviews.aggregate( [
      }
    }}
 ] )
-
+```
 2. Let’s practice some more. This time write the query from scratch to find the average price per night by suburb. Examine the document structure first. Hint: suburb is a field within a subdocument address; use dot notation to reference it.
 3. Now let’s combine the skills we’ve learned. Compute the count of properties and average price per night by suburbs and number of bedrooms by filling in the blanks.
+```
 db.austinListingsAndReviews.aggregate([
-	{"$group" : 
-		{
+  {"$group" : 
+    {
 _id:{suburb:"$___", bedrooms:"$___"}, 
 ___:{$sum:1}, 
 avg:{$___:"$price"}}
-		}
+    }
 ])
-
+```
 4. Use the query in #3 and add a $match stage to only show those properties that have a pool.
 
 ## Learn how to do aggregations you cannot do in SQL
-We will use the following operators:	
+We will use the following operators:  
 $objectToArray
 $geonear
 $graphlookup
-
 And the following aggregation pipeline stages:
-	$match → $project: → $unwind: "$scores" → $group
+  $match → $project: → $unwind: "$scores" → $group
 
 1. Let’s take a look at an example first. Let’s assume we want to determine average review scores for all properties in Austin based on some amenities. Remember that review_scores is a sub document. Luckily we have $objectToArray to transform our object into an array which we can then $unwind and $group. 
-
+```
 db.austinListingsAndReviews.aggregate([
    { $match : {amenities: { $in: ["Pool", "Air conditioning", "Wifi"] } } },
    { $project: { scores: { $objectToArray: "$review_scores" } } },
    { $unwind: "$scores" },
    { $group: { _id: "$scores.k", average_score: { $avg: "$scores.v" } } }
 ])
-
+```
 Compare two neighbourhoods - South Lamar and West Campus - and decide based on average review where you would rather stay. Assume you also want a place that has pool, wifi, and air-conditioning, under $200
 Hint: You will need to look up how to use $and operator for this
 
 2. Let’s find all airbnb listings around our .local Austin venue, Alamo Drafthouse. The coordinates are 30.2988474,-97.7064386. We can do this by using $geoNear operator, as follows:
-
+```
  db.austinListingsAndReviews.aggregate([
    {
      $geoNear: {
@@ -286,12 +337,12 @@ Hint: You will need to look up how to use $and operator for this
      }
    }
 ]).pretty()
-
+```
 Now practice writing this query for yourself. Use $geoNear to find airbnbs near location of your choice and add the same search criteria we used in #1 above - a place that has pool, wifi, and air-conditioning, under $200
 You can find $geoNear documentation and additional examples here. 
 
 3. Take a look at this example. Let’s say we want to build a recommendation engine based on users that reviewed the same properties. We can use $graphlookup to run a recursive query that says: “for a given reviewer, e.g. 7538 let’s find all listings reviewed by users who also reviewed the same listings as 7538”
-
+```
 db.austinListingsAndReviews.aggregate( [
    { $match: { "reviews.reviewer_id": "7538" } } ,{ $unwind: "$reviews" },{
       $graphLookup: {
@@ -301,35 +352,33 @@ db.austinListingsAndReviews.aggregate( [
          connectToField: "reviews.reviewer_id",
          as: "reviewed_listings",
          maxDepth: 1,
-      	 depthField: "depth",
-      	 restrictSearchWithMatch: { "reviews.reviewer_id": { $ne: "7538" } }
+         depthField: "depth",
+         restrictSearchWithMatch: { "reviews.reviewer_id": { $ne: "7538" } }
       }},
    {  $project: { 
-   	    _id: 0,
+        _id: 0,
         listing: "$_id",
         url: "$listing_url" }}]).pretty()
+```
+
+Now build your own $graphLookup query. Some host in Austin have multiple listings, for example, host_id:100208662. Construct a $graphlookup query that finds all the listings by that host. You can find $graphLookup documentation and additional examples [here](https://docs.mongodb.com/manual/reference/operator/aggregation/graphLookup/).
 
 
+## Part 4: Analysing data with The MongoDB Connector for Apache Spark
 
-Now build your own $graphLookup query. Some host in Austin have multiple listings, for example, host_id:100208662. Construct a $graphlookup query that finds all the listings by that host. You can find $graphLookup documentation and additional examples here.
+In this section we'll use the machine learning ALS library in Spark to generate a set of personalized movie recommendations for a given user, based on the publically available [MovieLens dataset](http://files.grouplens.org/datasets/movielens/ml-latest-small.zip)
 
+<br/>Ensure you have downloaded the data and imported it into MongoDB with mongorestore. You can find instructions on using mongorestore in the MongoDB Documentation. You can also run this full example with Execute the following [Databricks Notebook](
+https://community.cloud.databricks.com/?o=2374217986360057#notebook/42327714871690)
 
-## The MongoDB Connector for Apache Spark
-
-Using the machine learning ALS library in Spark to generate a set of personalized movie recommendations for a given user based MovieLens dataset. </br>
-
-http://files.grouplens.org/datasets/movielens/ml-latest-small.zip
-
-<br/>Ensure you have downloaded the data and imported it into MongoDB with mongorestore. You can find instructions on using mongorestore in the MongoDB Documentation. You can also run this full example with Execute the following Databricks Notebook<br/>
-https://community.cloud.databricks.com/?o=2374217986360057#notebook/42327714871690
-
-#### Download Spark 
+__Step 1__ Download Spark 
+From the commandline download and decompress Spark v2.3
+```
 http://apache.claz.org/spark/spark-2.3.2/spark-2.3.2-bin-hadoop2.7.tgz
 tar -xf spark-2.3.2-bin-hadoop2.7.tgz
-
-#### Execute Spark
-from the commandline, start the Spark interactive shell
-
+```
+__Step 2__ Start the Spark interactive shell
+From the commandline execute
 ```
 ./spark-2.3.1-bin-hadoop2.7/bin/spark-shell \
  --conf \
@@ -339,8 +388,8 @@ from the commandline, start the Spark interactive shell
  --packages org.mongodb.spark:mongo-spark-connector_2.11:2.3.0
 ```
 
-#### Run the scala example code
-
+__Step 3__ Run the scala example code
+At the Spark prompt execute the follwing code
 ```
 import com.mongodb.spark._
 
