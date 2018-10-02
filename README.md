@@ -380,53 +380,82 @@ tar -xf spark-2.3.2-bin-hadoop2.7.tgz
 __Step 2__ Start the Spark interactive shell
 From the commandline execute
 ```
-./spark-2.3.1-bin-hadoop2.7/bin/spark-shell \
- --conf \
-"spark.mongodb.input.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/recommendation.ratings" \
- --conf \
-  "spark.mongodb.output.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/recommendation.perUser" \
- --packages org.mongodb.spark:mongo-spark-connector_2.11:2.3.0
+./spark-2.3.1-bin-hadoop2.7/bin/spark-shell  \
+--conf \
+"spark.mongodb.input.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/airbnb.austinListingsAndReviews \
+--conf   \
+"spark.mongodb.output.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/airbnb.clusters" \
+--packages org.mongodb.spark:mongo-spark-connector_2.11:2.3.0
 ```
 
-__Step 3__ Run the scala example code
+__Step 3__ Prepare to Read data in from MongoDB
 At the Spark prompt execute the follwing code
-```
-import com.mongodb.spark._
+```// First prefilter data in MongoDB, filtering out fields we don't need
+val pipeline = """[ { $project: {
+ "_id": 0,
+ "accommodates": "$accommodates",
+ "price": "$price",
+ "coordinates": "$address.location.coordinates"
+ }
+}]"""
 
-val ratings = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("database", "recommendation").option("collection", "ratings").load()
+// Read from the collection defined in the command line parameter
+val ds = spark.read.format("com.mongodb.spark.sql.DefaultSource").option("pipeline", pipeline).load()
 
-case class Rating(userId: Int, movieId: Int, rating: Double, timestamp: Long)
+// The Spark Connector will use MongoDB's $sample command to infer the Dataset's schema from a sample set of docs.
+// However, you can avoid the need to sample if you know what the schema is
+// We use the following case class to explicitly declare the schema without sampling
+
+case class Listing( accommodates: Int, price: BigDecimal, coordinates: Array[Double]  )
+
+// This second case class is used to flatten out the coordinate array in to lat / long pairs
+case class FlatListing( accommodates: Int, price: BigDecimal, latitude: Double, longitude: Double )
 
 import spark.implicits._
-val ratingsDS = ratings.as[Rating]
-ratingsDS.cache()
-ratingsDS.show()
+val listings = ds.as[Listing].map( v => (  FlatListing ( v.accommodates, v.price, v.coordinates(1), v.coordinates(0) ) ) )
 
-import org.apache.spark.ml.evaluation.RegressionEvaluator
-import org.apache.spark.ml.recommendation.ALS
+// let's cache the dataset as we are going to use it in a multi-pass algorithm
+listings.cache()
+// Let's see what the data looks like so far
+listings.show()
+```
 
-/* import org.apache.spark.ml.recommendation.ALS.Rating */
-val Array(training, test) = ratings.randomSplit(Array(0.8, 0.2))
+ __Step 4__ Reformat data so that the KMeans class can process it
+At the Spark prompt execute the follwing code
+```
+// We need to reformat the dataset so that it can be processed by MLLib's KMeans class
+import org.apache.spark.ml.feature._
+val assembler = new VectorAssembler().setInputCols( listings.columns ).setOutputCol("features")
+val vectors = assembler.transform(listings)
 
-// Build the recommendation model using ALS on the training data
-val als = new ALS().setMaxIter(5).setRegParam(0.01).setUserCol("userId").setItemCol("movieId").setRatingCol("rating")
-val model = als.fit(training)
+//Here's what it looks like now
+vectors.show()
+```
 
-// Evaluate the model by computing the RMSE on the test data
-// Note we set cold start strategy to 'drop' to ensure we don't get NaN evaluation metrics
-model.setColdStartStrategy("drop")
-val predictions = model.transform(test)
+ __Step 5__ Train a KMeans model with the prepared data vector 
+At the Spark prompt execute the follwing code
+```
+import org.apache.spark.ml.clustering.{KMeans, KMeansModel}
+// Cluster the data into 4 classes of listing using KMeans.
+// This is where the machine learning magic happens!!!
+val kmeans = new KMeans().setK(4).setSeed(1L).setMaxIter(5)
+val model = kmeans.fit( vectors )
 
-val evaluator = new RegressionEvaluator().setMetricName("rmse").setLabelCol("rating").setPredictionCol("prediction")
-val rmse = evaluator.evaluate(predictions)
-println(s"Root-mean-square error = $rmse")
+// let see what our centroids look like
+model.clusterCenters.foreach( println )
+```
 
-
-// Write recommendations back to MongoDB
-import org.apache.spark.sql.functions._
-val docs  = predictions.map( r => ( r.getInt(4), r.getInt(1),  r.getDouble(2) ) ).toDF( "userID", "movieId", "rating" )
-
-docs.show()
-
-docs.write.format("com.mongodb.spark.sql.DefaultSource").mode("overwrite").option("database", "recommendation").option("collection", "recommendations").save()
+ __Step 6__ Assign each airbnb listing in the area to a cluster 
+At the Spark prompt execute the follwing code
+```
+// let's now assign each listing to a cluster
+val classifiedListings = model.transform( vectors ).drop( "features" )
+// and see what that looks like
+classifiedListings.show()
+```
+ __Step 7__ Write the cluster assignments back to MongoDB 
+At the Spark prompt execute the follwing code
+// finally, let's write the listing clusters to MongoDB
+classifiedListings.write.format("com.mongodb.spark.sql.DefaultSource").mode("overwrite").save()
+```
 ```
