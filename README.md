@@ -79,7 +79,7 @@ __Step 1__ Download MongoDB ODBC driver
 [Select and download](https://github.com/mongodb/mongo-odbc-driver/releases/) the appropriate version for your OS
 
 __Step 2__ Create a DSN
-Follow OS specfic [instructions](https://docs.atlas.mongodb.com/tutorial/create-system-dsn/)
+Follow OS specfic [instructions](https://docs.atlas.mongodb.com/tutorial/create-system-dsn/). Be sure to use SERVER dataanalyticsworkshop-biconnector-sshrq.mongodb.net
 
 __Step 3__ Connect from Excel
 * Start Excel, select the "data" Tab, and clik on "New Database Query"
@@ -92,7 +92,7 @@ In the popup's "SQL Query" section, input query
 ```
 SELECT *
 FROM austinListingsAndReviews 
-JOIN  austinListingsAndReviews_amenities "return data"
+JOIN  austinListingsAndReviews_amenities
     ON austinListingsAndReviews._id = austinListingsAndReviews_amenities._id;
 ```
 __Step 5__ Load data into sheet
