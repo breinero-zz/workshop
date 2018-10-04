@@ -384,7 +384,7 @@ From the commandline execute
 --conf \
 spark.mongodb.input.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/airbnb.austinListingsAndReviews \
 --conf   \
-spark.mongodb.output.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/airbnb.clusters" \
+spark.mongodb.output.uri=mongodb+srv://demo:demo@dataanalyticsworkshop-sshrq.mongodb.net/airbnb.clusters \
 --packages org.mongodb.spark:mongo-spark-connector_2.11:2.3.0
 ```
 
